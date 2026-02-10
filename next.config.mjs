@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  experimental: {
+    serverExternalPackages: ['@whiskeysockets/baileys'],
+  },
 };
 
 export default nextConfig;
