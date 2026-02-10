@@ -37,16 +37,38 @@ export async function connectToWhatsApp() {
     });
 
     sock.ev.on('messages.upsert', async m => {
-        console.log(JSON.stringify(m, undefined, 2));
+        // console.log(JSON.stringify(m, undefined, 2));
     });
 
     return sock;
 }
 
-export function getQR() {
-    return qrCode;
+export async function sendBlast(numbers, message, delayRange = [5, 15]) {
+    if (!sock) throw new Error('WhatsApp not connected');
+
+    const results = [];
+    for (const number of numbers) {
+        try {
+            // Format number (remove + and add @s.whatsapp.net)
+            const formattedNumber = number.replace(/\D/g, '') + '@s.whatsapp.net';
+            
+            // Simulate typing
+            await sock.sendPresenceUpdate('composing', formattedNumber);
+            
+            // Random delay before sending
+            const delay = Math.floor(Math.random() * (delayRange[1] - delayRange[0] + 1) + delayRange[0]) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            
+            await sock.sendMessage(formattedNumber, { text: message });
+            await sock.sendPresenceUpdate('paused', formattedNumber);
+            
+            results.push({ number, status: 'sent' });
+        } catch (error) {
+            results.push({ number, status: 'failed', error: error.message });
+        }
+    }
+    return results;
 }
 
-export function getSock() {
-    return sock;
-}
+export const getQR = () => qrCode;
+export const getSock = () => sock;
